@@ -2,6 +2,9 @@
 
 
 function getDirContents($dir, &$results = array()){
+	
+	if( empty( $dir ) ) { return array(); }
+    
     $files = scandir($dir);
 
     foreach($files as $key => $value){
@@ -18,7 +21,7 @@ function getDirContents($dir, &$results = array()){
 }
 
 $linecount = 0;
-$files = $extensions = array();
+$files = $extensions = $child_dirs = array();
 
 if( isset( $_REQUEST['dir'] ) ) {
 
@@ -29,6 +32,10 @@ if( isset( $_REQUEST['dir'] ) ) {
 	$extensions = array();
 
 	foreach( $files as $i => $file ) {
+
+		if( is_dir( $file ) ) {
+			$child_dirs[] = $file;
+		}
 
 		$parts = explode( '.', $file );
 		$ext = ! empty( end( $parts ) ) && ! is_dir( $file ) ? end( $parts ) : false;
@@ -53,6 +60,32 @@ if( isset( $_REQUEST['dir'] ) ) {
 		  $linecount++;
 		}
 		fclose($handle);
+
+	}
+
+	foreach( $child_dirs as $i => $dir ) {
+
+		$_dir = array();
+		$_dir['files'] = getDirContents($dir);
+		$_dir['lines'] = 0;
+		$_dir['path'] = $dir;
+
+		$child_dirs[$i] = $_dir;
+	}
+
+	foreach( $child_dirs as $i => $dir ) {
+
+		foreach( $dir['files'] as $file ) {
+
+			$handle = ! is_dir( $file ) ? fopen($file, "r") : false;
+			if( ! $handle ) { continue; }
+			while(!feof($handle)){
+			  $line = fgets($handle);
+			  $child_dirs[$i]['lines']++;
+			}
+			fclose($handle);
+
+		}
 
 	}
 
@@ -94,10 +127,28 @@ if( isset( $_REQUEST['dir'] ) ) {
 		<?php if( ! empty( $files ) ) : ?>
 
 			<ul>
-				<li><em style="text-decoration: underline;">Total files</em>: <strong><?php echo $linecount; ?></strong></li>
-				<li><em style="text-decoration: underline;">Total lines found</em>: <strong><?php echo count( $files ); ?></strong></li>
 				<li><em style="text-decoration: underline;">Selected directory</em>: <strong><?php echo isset( $_REQUEST['dir'] ) ? $_REQUEST['dir'] : 'none'; ?></strong></li>
-				<li><em style="text-decoration: underline;">Files list</em>:<ul><?php foreach( $files as $file ) { echo '<li>' . $file . '</li>'; } ?></ul></li>
+				<li><em style="text-decoration: underline;">Total files</em>: <strong><?php echo count( $files ); ?></strong></li>
+				<li><em style="text-decoration: underline;">Total lines found</em>: <strong><?php echo $linecount; ?></strong></li>
+				<li><em style="text-decoration: underline;">Total sub-directories</em>: <strong><?php echo count( $child_dirs ); ?></strong></li>
+				<li><em style="text-decoration: underline;">Files list</em>:<ol><?php foreach( $files as $file ) { echo '<li>' . $file . '</li>'; } ?></ol></li>
+				<li>
+					<em style="text-decoration: underline;">Sub-directories:</em><em> (extension filters are not applicable)</em>
+					<ol>
+						<?php foreach( $child_dirs as $dir ) : ?>
+							<li>
+								<ul>
+									<li>Path: <?php echo $dir['path']; ?></li>
+									<li>Total lines found: <?php echo (int) $dir['lines']; ?></li>
+									<li>File count: <?php echo count( $dir['files'] ); ?></li>
+									<li>Files: <ol>
+										<?php foreach( $dir['files'] as $file ) { echo '<li>' . $file . '</li>'; } ?>
+									</ol></li>
+								</ul>
+							</li>
+						<?php endforeach; ?>
+					</ol>
+				</li>
 			</ul>
 
 		<?php else : ?>
@@ -106,6 +157,10 @@ if( isset( $_REQUEST['dir'] ) ) {
 
 		<?php endif; ?>
 
+	</div>
+
+	<div style="display: table; margin: 0 auto; margin-top: 1em;">
+		<p>Copyright &copy; 2016 Samuel Elh | <a href="http://samelh.com">samelh.com</a> | <a href="https://github.com/elhardoum/PHP-directory-scanner">Github project</a></p>
 	</div>
 
 </body>
