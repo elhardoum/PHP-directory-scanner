@@ -96,7 +96,7 @@ if( isset( $_REQUEST['dir'] ) ) {
 <!DOCTYPE html>
 <html style="background:#F9F9F9;font-family:monospace,sans-serif">
 <head>
-	<title></title>
+	<title>PHP directory scanner</title>
 </head>
 <body>
 
