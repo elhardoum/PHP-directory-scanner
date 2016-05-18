@@ -25,3 +25,4 @@ This PHP small and light project can be implemented to scan a custom directory t
 <h2>Preview</h2>
 <img src="http://i.imgur.com/BhrPt2t.png" alt="preview" />
 
+<em>Have improvements? want to contribute? let's be in touch samelh.com/contact/ ..</em>
